@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="UESAN.ExchangePro.CORE/UESAN.ExchangePro.CORE.csproj" />
+  <Project Path="UESAN.ExchangePro/UESAN.ExchangePro.API.csproj" />
+</Solution>
