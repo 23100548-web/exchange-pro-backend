@@ -14,26 +14,35 @@ namespace UESAN.ExchangePro.CORE.Core.Services
     public class AuthService : IAuthService
     {
         private readonly IUsuarioRepository _usuarioRepository;
+        private readonly IWalletRepository _walletRepository;
+        private readonly IEmailService _emailService;
         private readonly IConfiguration _config;
 
-        public AuthService(IUsuarioRepository usuarioRepository, IConfiguration config)
+        public AuthService(IUsuarioRepository usuarioRepository, IWalletRepository walletRepository, IEmailService emailService, IConfiguration config)
         {
             _usuarioRepository = usuarioRepository;
+            _walletRepository = walletRepository;
+            _emailService = emailService;
             _config = config;
         }
 
         public async Task<bool> Registrar(RegistroDTO registroDTO)
         {
+            // 1. Validación básica de contraseñas
             if (registroDTO.Password != registroDTO.ConfirmarPassword)
                 throw new Exception("Las contraseñas no coinciden.");
 
+            // 2. Verificación de existencia (seguridad)
             bool existe = await _usuarioRepository.CorreoExiste(registroDTO.Correo);
             if (existe)
                 throw new Exception("El correo ya está registrado.");
 
+            // 3. Creación del objeto Usuario
+            // NOTA: Al no asignar 'IdRolNavigation', evitamos que EF Core intente 
+            // insertar o validar la tabla Roles innecesariamente.
             var nuevoUsuario = new Usuarios
             {
-                IdRol = 1,
+                IdRol = 1, // Rol USER por defecto
                 NombreCompleto = $"{registroDTO.Nombres} {registroDTO.Apellidos}".Trim(),
                 Correo = registroDTO.Correo,
                 Telefono = registroDTO.Telefono,
@@ -45,7 +54,22 @@ namespace UESAN.ExchangePro.CORE.Core.Services
                 FechaRegistro = DateTime.UtcNow
             };
 
-            return await _usuarioRepository.Insert(nuevoUsuario);
+            // 4. Inserción
+            bool usuarioInsertado = await _usuarioRepository.Insert(nuevoUsuario);
+
+            // 5. Creación de la Wallet asociada
+            if (usuarioInsertado)
+            {
+                var nuevaWallet = new Wallets
+                {
+                    IdUsuario = nuevoUsuario.IdUsuario, // EF Core debería tener el ID tras el Insert
+                    FechaCreacion = DateTime.UtcNow
+                };
+                await _walletRepository.Insert(nuevaWallet);
+                return true;
+            }
+
+            return false;
         }
 
         public async Task<string> Login(LoginDTO loginDTO)
@@ -93,7 +117,22 @@ namespace UESAN.ExchangePro.CORE.Core.Services
             usuario.ResetTokenExpiry = DateTime.UtcNow.AddHours(24);
             await _usuarioRepository.Update(usuario);
 
-            // EmailService será implementado por Persona 5
+            try
+            {
+                var baseUrl = _config["App:BaseUrl"] ?? "http://localhost:9000";
+                var resetUrl = $"{baseUrl}/#/reset-password?token={token}";
+                var body = $@"
+                    <h2>Recuperación de contraseña - ExchangePro</h2>
+                    <p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
+                    <p><a href='{resetUrl}'>{resetUrl}</a></p>
+                    <p>Este enlace expira en 24 horas.</p>
+                    <p>Si no solicitaste este cambio, ignora este mensaje.</p>";
+                await _emailService.SendEmailAsync(usuario.Correo, "Recuperación de contraseña - ExchangePro", body);
+            }
+            catch
+            {
+                // Si falla el envío de correo, el token igual se generó
+            }
 
             return token;
         }

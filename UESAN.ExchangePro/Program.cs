@@ -6,6 +6,8 @@ using UESAN.ExchangePro.CORE.Core.Interfaces;
 using UESAN.ExchangePro.CORE.Core.Services;
 using UESAN.ExchangePro.CORE.Infrastructure.Data;
 using UESAN.ExchangePro.CORE.Infrastructure.Repositories;
+using UESAN.ExchangePro.CORE.Infrastructure.Services;
+using UESAN.ExchangePro.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +30,22 @@ builder.Services.AddDbContext<ExchangeProDbContext>(options =>
 
 // 2. Registro de Repositorios y Servicios (Inyección de Dependencias)
 builder.Services.AddTransient<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddTransient<IWalletRepository, WalletRepository>();
 builder.Services.AddTransient<IAuthService, AuthService>();
+builder.Services.AddTransient<IDatosPagoRepository, DatosPagoRepository>();
+builder.Services.AddTransient<IOfertaRepository, OfertaRepository>();
+builder.Services.AddTransient<ITransaccionRepository, TransaccionRepository>();
+builder.Services.AddTransient<IDisputaRepository, DisputaRepository>();
+builder.Services.AddTransient<IFeedbackRepository, FeedbackRepository>();
+builder.Services.AddTransient<ICalificacionRepository, CalificacionRepository>();
+builder.Services.AddTransient<IMovimientoWalletRepository, MovimientoWalletRepository>();
+builder.Services.AddTransient<IRetiroRepository, RetiroRepository>();
+builder.Services.AddTransient<IAdminService, AdminService>();
+builder.Services.AddTransient<IEmailService, EmailService>();
+builder.Services.AddTransient<INotificacionesRepository, NotificacionesRepository>();
+builder.Services.AddTransient<IRecargaRepository, RecargaRepository>();
+builder.Services.AddHttpClient<ITipoCambioService, TipoCambioService>();
+builder.Services.AddMemoryCache();
 
 // 3. Configuración de Seguridad JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
