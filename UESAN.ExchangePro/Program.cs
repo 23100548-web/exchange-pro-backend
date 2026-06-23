@@ -6,7 +6,6 @@ using UESAN.ExchangePro.CORE.Core.Interfaces;
 using UESAN.ExchangePro.CORE.Core.Services;
 using UESAN.ExchangePro.CORE.Infrastructure.Data;
 using UESAN.ExchangePro.CORE.Infrastructure.Repositories;
-using UESAN.ExchangePro.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
