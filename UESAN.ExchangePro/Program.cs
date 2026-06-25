@@ -18,7 +18,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowQuasar", policy =>
     {
-        policy.WithOrigins("http://localhost:9000") // El puerto exacto de tu Quasar
+        policy.AllowAnyOrigin()                   // Acepta desde cualquier origen (ngrok, localhost, etc.)
               .AllowAnyMethod()                     // Permite POST, GET, PUT, DELETE
               .AllowAnyHeader();                    // Permite Content-Type, Authorization (JWT)
     });
