@@ -43,8 +43,9 @@ namespace UESAN.ExchangePro.CORE.Core.Services
             var nuevoUsuario = new Usuarios
             {
                 IdRol = 1, // Rol USER por defecto
-                NombreCompleto = $"{registroDTO.Nombres} {registroDTO.Apellidos}".Trim(),
                 Correo = registroDTO.Correo,
+                Nombres = registroDTO.Nombres,
+                Apellidos = registroDTO.Apellidos,
                 Telefono = registroDTO.Telefono,
                 DocumentoIdentidad = registroDTO.DocumentoIdentidad,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(registroDTO.Password),
